@@ -40,15 +40,18 @@ func NewOidcConfig(clientID, clientSecret, callbackURL, providerURL *string) *Oi
 	return config
 }
 
-func (cfg OidcConfig) SigninHandler(c echo.Context) error {
-	oauthConfig := &oauth2.Config{
+func (cfg OidcConfig) oAuth2Config() *oauth2.Config {
+	return &oauth2.Config{
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
 		Endpoint:     cfg.Provider.Endpoint(),
 		RedirectURL:  cfg.CallbackURL,
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", "offline_access"},
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", "groups", "offline_access"},
 	}
-	return c.Redirect(http.StatusFound, oauthConfig.AuthCodeURL(state))
+}
+
+func (cfg OidcConfig) SigninHandler(c echo.Context) error {
+	return c.Redirect(http.StatusFound, cfg.oAuth2Config().AuthCodeURL(state))
 }
 
 func (cfg OidcConfig) CallbackHandler(c echo.Context) error {
@@ -56,14 +59,7 @@ func (cfg OidcConfig) CallbackHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid state")
 	}
 
-	oauthConfig := &oauth2.Config{
-		ClientID:     cfg.ClientID,
-		ClientSecret: cfg.ClientSecret,
-		Endpoint:     cfg.Provider.Endpoint(),
-		RedirectURL:  cfg.CallbackURL,
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", "offline_access"},
-	}
-	oauth2Token, err := oauthConfig.Exchange(context.Background(), c.QueryParam("code"))
+	oauth2Token, err := cfg.oAuth2Config().Exchange(context.Background(), c.QueryParam("code"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to exchange token: "+err.Error())
 	}
