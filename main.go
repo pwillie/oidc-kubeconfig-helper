@@ -18,9 +18,9 @@ import (
 
 func main() {
 	provider := flag.String("provider", "", "OIDC provider url")
-	clientid := flag.String("clientid", "", "OIDC Client ID")
-	clientsecret := flag.String("clientsecret", "", "OIDC Client Secret")
-	callbackurl := flag.String("callbackurl", "/callback", "Callback URL")
+	clientID := flag.String("clientID", "", "OIDC Client ID")
+	clientSecret := flag.String("clientSecret", "", "OIDC Client Secret")
+	callbackURL := flag.String("callbackURL", "/callback", "Callback URL")
 	listenAddress := flag.String("listen", ":8000", "Listen address")
 	versionFlag := flag.Bool("version", false, "Version")
 
@@ -35,7 +35,7 @@ func main() {
 		return
 	}
 
-	config := oidc.NewOidcConfig(clientid, clientsecret, callbackurl, provider)
+	config := oidc.NewOidcConfig(clientID, clientSecret, callbackURL, provider)
 
 	// Echo instance
 	e := echo.New()
